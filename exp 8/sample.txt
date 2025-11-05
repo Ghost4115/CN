@@ -1,0 +1,5 @@
+Sample file:
+
+with open("sample.txt", "w") as f:
+    f.write("This is a sample file for TCP file transfer test.\nHello from Client!")
+print("Sample file created.")

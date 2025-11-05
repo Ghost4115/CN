@@ -1,0 +1,87 @@
+import socket
+import threading
+import time
+
+# -------------------
+# TCP Server
+# -------------------
+def tcp_server():
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind(('localhost', 12345))
+    server_socket.listen(1)
+    print("[TCP Server] Waiting for connection...")
+
+    conn, addr = server_socket.accept()
+    print(f"[TCP Server] Connected by {addr}")
+
+    data = conn.recv(1024).decode()
+    print(f"[TCP Server] Client says: {data}")
+
+    conn.sendall("Hello from TCP Server".encode())
+    conn.close()
+    print("[TCP Server] Connection closed.")
+
+# -------------------
+# TCP Client
+# -------------------
+def tcp_client():
+    time.sleep(1)  # wait for server to start
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect(('localhost', 12345))
+
+    client_socket.sendall("Hello from TCP Client".encode())
+    data = client_socket.recv(1024).decode()
+    print(f"[TCP Client] Server says: {data}")
+
+    client_socket.close()
+    print("[TCP Client] Connection closed.")
+
+# -------------------
+# UDP Server
+# -------------------
+def udp_server():
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server_socket.bind(('localhost', 12346))  # use different port
+    print("[UDP Server] Waiting for message...")
+
+    data, addr = server_socket.recvfrom(1024)
+    print(f"[UDP Server] Received from {addr}: {data.decode()}")
+
+    server_socket.sendto("Hello from UDP Server".encode(), addr)
+    print("[UDP Server] Response sent.")
+
+# -------------------
+# UDP Client
+# -------------------
+def udp_client():
+    time.sleep(1)  # wait for server to start
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server_address = ('localhost', 12346)
+
+    client_socket.sendto("Hello from UDP Client".encode(), server_address)
+    data, addr = client_socket.recvfrom(1024)
+    print(f"[UDP Client] Server says: {data.decode()}")
+
+    client_socket.close()
+    print("[UDP Client] Connection closed.")
+
+# -------------------
+# Run all using threads
+# -------------------
+threads = []
+
+# TCP
+threads.append(threading.Thread(target=tcp_server))
+threads.append(threading.Thread(target=tcp_client))
+
+# UDP
+threads.append(threading.Thread(target=udp_server))
+threads.append(threading.Thread(target=udp_client))
+
+# Start all threads
+for t in threads:
+    t.start()
+
+# Wait for all threads to finish
+for t in threads:
+    t.join()
